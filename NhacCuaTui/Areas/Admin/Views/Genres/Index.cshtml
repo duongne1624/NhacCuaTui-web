@@ -1,0 +1,34 @@
+﻿<div class="card">
+    <div class="card-body">
+        <h5 class="card-title fw-semibold mb-4">QUẢN LÝ THỂ LOẠI</h5>
+        <div class="table-responsive" data-simplebar>
+            <table class="table table-vcenter">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width:5%">STT</th>
+                        <th scope="col" style="width:40%">Thể loại</th>
+                        <th scope="col">Quốc gia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in ViewBag.listGenres)
+                    {
+                        <tr>
+                            <td>
+                                <p class="fs-3 fw-normal mb-0">@a[0]</p>
+                            </td>
+                            <td>
+                                <p class="fs-3 fw-normal mb-0">@a[1]</p>
+                            </td>
+                            <td>
+                                <p class="fs-3 fw-normal mb-0 text-primary">
+                                    @a[2]
+                                </p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

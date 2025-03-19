@@ -1,0 +1,554 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    System.Collections.ArrayList a = ((System.Collections.ArrayList)ViewBag.getInfoUser[0]);
+}
+
+<div class="main-container">
+    <h2>Thông tin người dùng</h2>
+    <div class="info" id="name-container">
+        <label>Họ tên:</label>
+        <span id="name-text">@a[2]</span>
+    </div>
+    <div class="info" id="email-container">
+        <label>Email:</label>
+        <span id="email-text">@a[3]</span>
+    </div>
+    <div class="info" id="phone-container">
+        <label>Số điện thoại:</label>
+        <span id="phone-text">@a[4]</span>
+    </div>
+    <div class="info" id="created-date-container">
+        <label>Ngày tạo:</label>
+        <span id="created-date-text">@a[5]</span>
+    </div>
+    <div class="info" id="updated-date-container">
+        <label>Ngày cập nhật:</label>
+        <span id="updated-date-text">@a[6]</span>
+    </div>
+
+    <div class="button-container">
+        <button id="edit-button" class="button" onclick="toggleEdit()">Thay đổi thông tin cá nhân</button>
+        <button id="change-password-button" class="button" onclick="showChangePasswordModal()">Đổi mật khẩu</button>
+    </div>
+
+    <hr>
+
+    <h2>Playlist của bạn</h2>
+    <div id="playlists-container">
+        <div class="button-container">
+            <button id="add-playlist-button" class="button" onclick="showAddPlaylistModal()">Thêm Playlist</button>
+        </div>
+        <div id="playlists-container">
+            <p id="no-playlist-message" style="display: none;">Bạn chưa có playlist nào.</p>
+        </div>
+    </div>
+</div>
+<div id="addPlaylistModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Thêm Playlist Mới</h2>
+            <span id="closeAddPlaylistModal" style="cursor: pointer; font-size: 20px;">&times;</span>
+        </div>
+        <label>Tên Playlist:</label>
+        <input type="text" id="playlist-name" placeholder="Nhập tên playlist" required>
+        <div class="modal-footer">
+            <button id="savePlaylistButton" class="button">Lưu</button>
+            <button id="cancelAddPlaylistButton" class="button" style="background-color: #dc3545;">Hủy</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận -->
+<div id="confirmModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Xác nhận</h2>
+            <span id="closeModal" style="cursor: pointer; font-size: 20px;">&times;</span>
+        </div>
+        <p style="padding-top: 10px; padding-bottom: 50px">Bạn có muốn lưu thông tin đã thay đổi không?</p>
+        <div class="modal-footer">
+            <button id="confirmButton" class="button">Có</button>
+            <button id="cancelButton" class="button" style="background-color: #dc3545;">Không</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Đổi Mật Khẩu -->
+<div id="changePasswordModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Đổi Mật Khẩu</h2>
+            <span id="closeChangePasswordModal" style="cursor: pointer; font-size: 20px;">&times;</span>
+        </div>
+        <label>Mật khẩu cũ:</label>
+        <input type="password" id="old-password" placeholder="Nhập mật khẩu cũ" required>
+        <label>Mật khẩu mới:</label>
+        <input type="password" id="new-password" placeholder="Nhập mật khẩu mới" required>
+        <label>Xác nhận mật khẩu mới:</label>
+        <input type="password" id="confirm-new-password" placeholder="Xác nhận mật khẩu mới" required>
+        <div class="modal-footer">
+            <button id="savePasswordButton" class="button">Lưu</button>
+            <button id="cancelChangePasswordButton" class="button" style="background-color: #dc3545;">Hủy</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+     let isEditing = false;
+
+    function toggleEdit() {
+        isEditing = !isEditing;
+
+        const nameContainer = document.getElementById("name-container");
+        const emailContainer = document.getElementById("email-container");
+        const phoneContainer = document.getElementById("phone-container");
+        const createdDateContainer = document.getElementById("created-date-container");
+        const updatedDateContainer = document.getElementById("updated-date-container");
+
+        if (isEditing) {
+            // Chuyển sang chế độ chỉnh sửa
+            nameContainer.innerHTML = '<label>Họ tên:</label> <input type="text" id="name-input" value="@a[2]" />';
+            emailContainer.innerHTML = '<label>Email:</label> <input type="email" id="email-input" value="@a[3]" />';
+            phoneContainer.innerHTML = '<label>Số điện thoại:</label> <input type="text" id="phone-input" value="@a[4]" />';
+            createdDateContainer.innerHTML = '<label>Ngày tạo:</label> <span>@a[5]</span>'; // Không cho phép chỉnh sửa
+            updatedDateContainer.innerHTML = '<label>Ngày cập nhật:</label> <span>@a[6]</span>'; // Không cho phép chỉnh sửa
+            document.getElementById("edit-button").innerText = "Lưu thông tin";
+        } else {
+            // Hiển thị modal xác nhận
+            const modal = document.getElementById("confirmModal");
+            modal.style.display = "block"; // Hiện modal
+
+            // Xử lý xác nhận
+            document.getElementById("confirmButton").onclick = function () {
+                const nameValue = document.getElementById("name-input").value;
+                const emailValue = document.getElementById("email-input").value;
+                const phoneValue = document.getElementById("phone-input").value;
+
+                // Hiển thị thông tin đã lưu
+                nameContainer.innerHTML = '<label>Họ tên:</label> <span id="name-text">' + nameValue + '</span>';
+                emailContainer.innerHTML = '<label>Email:</label> <span id="email-text">' + emailValue + '</span>';
+                phoneContainer.innerHTML = '<label>Số điện thoại:</label> <span id="phone-text">' + phoneValue + '</span>';
+                createdDateContainer.innerHTML = '<label>Ngày tạo:</label> <span>@a[5]</span>'; // Không thay đổi
+                updatedDateContainer.innerHTML = '<label>Ngày cập nhật:</label> <span>@a[6]</span>'; // Không thay đổi
+
+                // Chuyển đến liên kết để gửi thông tin
+                const url = '../../User/EditUser?id=@a[0]&fullname=${encodeURIComponent(nameValue)}&email=${encodeURIComponent(emailValue)}&phone=${encodeURIComponent(phoneValue)}';
+                window.location.href = url; // Chuyển đến URL
+
+                // Đóng modal
+                modal.style.display = "none";
+                document.getElementById("edit-button").innerText = "Thay đổi thông tin cá nhân";
+            };
+
+            // Xử lý hủy bỏ
+            document.getElementById("cancelButton").onclick = function () {
+                modal.style.display = "none"; // Đóng modal
+                isEditing = true; // Quay lại chế độ chỉnh sửa
+            };
+
+            // Đóng modal khi nhấn vào dấu X
+            document.getElementById("closeModal").onclick = function () {
+                modal.style.display = "none"; // Đóng modal
+                isEditing = true; // Quay lại chế độ chỉnh sửa
+            };
+        }
+    }
+
+
+    // Hiển thị modal đổi mật khẩu
+    function showChangePasswordModal() {
+        const modal = document.getElementById("changePasswordModal");
+        modal.style.display = "block"; // Hiện modal
+
+        // Đóng modal khi nhấn vào dấu X
+        document.getElementById("closeChangePasswordModal").onclick = function () {
+            modal.style.display = "none"; // Đóng modal
+        };
+
+        // Xử lý hủy bỏ
+        document.getElementById("cancelChangePasswordButton").onclick = function () {
+            modal.style.display = "none"; // Đóng modal
+        };
+
+        // Xử lý lưu mật khẩu mới
+        document.getElementById("savePasswordButton").onclick = function () {
+            const oldPassword = document.getElementById("old-password").value;
+            const newPassword = document.getElementById("new-password").value;
+            const confirmNewPassword = document.getElementById("confirm-new-password").value;
+
+            // Kiểm tra mật khẩu cũ
+            if (oldPassword != @Session["Password"].ToString()) {
+                alert("Mật khẩu cũ không đúng.");
+                return; // Kết thúc hàm nếu mật khẩu cũ không đúng
+            }
+
+            // Thêm logic xác thực mật khẩu ở đây (ví dụ: gửi đến máy chủ)
+            if (newPassword === confirmNewPassword) {
+                // Chuyển đến liên kết để gửi thông tin mật khẩu
+                const url = '../../User/ChangePassword?id=@a[0]&newPass=${encodeURIComponent(newPassword)}';
+                window.location.href = url; // Chuyển đến URL
+            } else {
+                alert("Mật khẩu mới và xác nhận mật khẩu không khớp.");
+            }
+        };
+    }
+
+    // Đóng modal khi nhấn ra ngoài
+    window.onclick = function (event) {
+        const confirmModal = document.getElementById("confirmModal");
+        const changePasswordModal = document.getElementById("changePasswordModal");
+        if (event.target === confirmModal) {
+            confirmModal.style.display = "none"; // Đóng modal
+            isEditing = true; // Quay lại chế độ chỉnh sửa
+        }
+        if (event.target === changePasswordModal) {
+            changePasswordModal.style.display = "none"; // Đóng modal
+        }
+    }
+    // Xóa bài hát khỏi playlist
+    function removeSongFromPlaylist(playlistId, songId) {
+        if (confirm("Bạn có chắc chắn muốn xóa bài hát này khỏi playlist?")) {
+            fetch(`/Playlists/RemoveSong`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ playlistId, songId })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload(); // Tải lại trang
+                    } else {
+                        alert(data.message);
+                    }
+                });
+        }
+    }
+    function showAddPlaylistModal() {
+        const modal = document.getElementById("addPlaylistModal");
+        modal.style.display = "block";
+
+        document.getElementById("closeAddPlaylistModal").onclick = function () {
+            modal.style.display = "none";
+        };
+
+        document.getElementById("cancelAddPlaylistButton").onclick = function () {
+            modal.style.display = "none";
+        };
+
+        document.getElementById("savePlaylistButton").onclick = function () {
+            const playlistName = document.getElementById("playlist-name").value;
+            if (!playlistName.trim()) {
+                alert("Tên playlist không được để trống!");
+                return;
+            }
+
+            fetch(`/Playlists/AddPlaylist`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: playlistName })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                });
+        };
+    }
+    function deletePlaylist(playlistId) {
+        if (confirm("Bạn có chắc chắn muốn xóa playlist này?")) {
+            fetch(`/Playlists/DeletePlaylist`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ playlistId })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                });
+        }
+    }
+    // Lấy danh sách playlists từ server
+    function loadPlaylists() {
+        $.ajax({
+            url: '/Playlists/GetUserPlaylists?songId=1',
+            type: 'GET',
+            success: function (response) {
+                if (response.success) {
+                    renderPlaylists(response.playlists);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function () {
+                alert("Lỗi khi tải danh sách playlists.");
+            }
+        });
+    }
+
+    // Hiển thị playlists trên giao diện
+    function renderPlaylists(playlists) {
+        const container = $('#playlists-container');
+        container.empty();
+
+        if (playlists.length === 0) {
+            $('#no-playlist-message').show(); // Hiển thị thông báo nếu không có playlist
+            return;
+        }
+
+        $('#no-playlist-message').hide(); // Ẩn thông báo
+        playlists.forEach(playlist => {
+            const playlistElement = $(`
+            <div class="playlist">
+                <h3 style="display:flex; justify-content: space-between; align-items: center;">
+                    ${playlist.name}
+                    <button class="button btn-danger btn-sm" onclick="deletePlaylist(${playlist.id})">Xóa</button>
+                </h3>
+                <ul id="songs-in-playlist-${playlist.id}">
+                    <li>Đang tải...</li> <!-- Hiển thị trạng thái trong khi tải -->
+                </ul>
+            </div>
+        `);
+
+            container.append(playlistElement);
+            loadSongsInPlaylist(playlist.id); // Gọi API để lấy danh sách bài hát
+        });
+    }
+
+    // Lấy danh sách bài hát trong một playlist
+    function loadSongsInPlaylist(playlistId) {
+        $.ajax({
+            url: '/Playlists/GetSongsInPlaylist', // API để lấy bài hát
+            type: 'GET',
+            data: { playlistId: playlistId },
+            success: function (response) {
+                if (response.success) {
+                    renderSongs(playlistId, response.songs);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function () {
+                alert("Lỗi khi tải bài hát trong playlist.");
+            }
+        });
+    }
+
+    // Hiển thị danh sách bài hát trong một playlist
+    function renderSongs(playlistId, songs) {
+        const songList = $(`#songs-in-playlist-${playlistId}`);
+        songList.empty(); // Xóa trạng thái "Đang tải..."
+
+        if (songs.length === 0) {
+            songList.append('<li>Playlist chưa có bài hát nào.</li>');
+            return;
+        }
+
+        songs.forEach(song => {
+            const songElement = $(`
+            <li>
+                <span>${song.SongName}</span>
+                <button class="button btn-danger btn-sm" onclick="removeSongFromPlaylist(${playlistId}, ${song.SongId})">Xóa</button>
+            </li>
+        `);
+            songList.append(songElement);
+        });
+    }
+
+    // Xóa một playlist
+    function deletePlaylist(playlistId) {
+        if (!confirm("Bạn có chắc chắn muốn xóa playlist này?")) return;
+
+        $.ajax({
+            url: '/Playlists/DeletePlaylist', // API để xóa playlist
+            type: 'POST',
+            data: { playlistId: playlistId },
+            success: function (response) {
+                if (response.success) {
+                    alert(response.message);
+                    loadPlaylists(); // Tải lại danh sách playlists
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function () {
+                alert("Lỗi khi xóa playlist.");
+            }
+        });
+    }
+
+    // Xóa một bài hát khỏi playlist
+    function removeSongFromPlaylist(playlistId, songId) {
+        if (!confirm("Bạn có chắc chắn muốn xóa bài hát này khỏi playlist?")) return;
+
+        $.ajax({
+            url: '/Playlists/RemoveSong', // API để xóa bài hát khỏi playlist
+            type: 'POST',
+            data: { playlistId: playlistId, songId: songId },
+            success: function (response) {
+                if (response.success) {
+                    alert(response.message);
+                    loadSongsInPlaylist(playlistId); // Tải lại danh sách bài hát
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function () {
+                alert("Lỗi khi xóa bài hát.");
+            }
+        });
+    }
+
+    // Tải playlists khi trang được load
+    $(document).ready(function () {
+        loadPlaylists();
+    });
+</script>
+
+<style>
+    .playlist {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+        .playlist h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .playlist ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+            .playlist ul li {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+
+                .playlist ul li button {
+                    background-color: #dc3545;
+                    color: white;
+                    border: none;
+                    border-radius: 3px;
+                    padding: 5px 10px;
+                    cursor: pointer;
+                    font-size: 12px;
+                }
+
+                    .playlist ul li button:hover {
+                        background-color: #a71d2a;
+                    }
+
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0px;
+        background-color: #f4f4f4;
+    }
+
+    .main-container {
+        max-width: 600px;
+        margin: auto;
+        margin-top: 50px;
+        margin-bottom: 50px;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        text-align: center;
+        color: #333;
+    }
+
+    .info {
+        margin: 10px 0;
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+    }
+
+        .info:last-child {
+            border-bottom: none;
+        }
+
+    label {
+        font-weight: bold;
+    }
+
+    .button-container {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 15px;
+        margin: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s;
+    }
+
+        .button:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+
+    /* CSS cho Modal */
+    .modal {
+        display: none; /* Ẩn modal theo mặc định */
+        position: fixed; /* Ở vị trí cố định */
+        z-index: 1; /* Nằm trên cùng */
+        left: 0;
+        top: 0;
+        width: 100%; /* Toàn bộ chiều rộng */
+        height: 100%; /* Toàn bộ chiều cao */
+        overflow: auto; /* Nếu cần cuộn */
+        background-color: rgba(0, 0, 0, 0.4); /* Nền tối với độ trong suốt */
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% từ trên và tự động căn giữa */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 30%; /* Chiều rộng của modal */
+        border-radius: 8px; /* Bo tròn các góc */
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Đổ bóng */
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .modal-header h2 {
+            margin: 0;
+        }
+
+    .modal-footer {
+        text-align: right;
+    }
+</style>

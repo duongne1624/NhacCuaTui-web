@@ -1,0 +1,191 @@
+﻿<div class="card">
+    <div class="card-body">
+        <h5 class="card-title fw-semibold mb-4">THÊM ALBUM</h5>
+        <form action="~/Admin/Albums/ThemAlbum" method="post" enctype="multipart/form-data">
+            <!-- Input: Tên Album -->
+            <div class="mb-3">
+                <label for="albumname" class="form-label">Tên Album</label>
+                <input type="text" id="albumname" class="form-control" name="albumname" placeholder="Nhập tên album" required>
+            </div>
+
+            <!-- Input: Nghệ sĩ -->
+            <div class="mb-3">
+                <label for="artist_id" class="form-label">Nghệ sĩ</label>
+                <select id="artist_id" class="form-select" name="artist_id" required>
+                    <option value="">Chọn nghệ sĩ</option>
+                    <!-- Options được nạp từ cơ sở dữ liệu -->
+                    @foreach (var a in ViewBag.listArtists)
+                    {
+                        <option value="@a[0]">@a[1]</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Input: Ngày phát hành -->
+            <div class="mb-3">
+                <label for="release_date" class="form-label">Ngày phát hành</label>
+                <input type="date" id="release_date" class="form-control" name="release_date" required>
+            </div>
+
+            <!-- Input: Ảnh bìa Album -->
+            <div class="mb-3">
+                <label for="cover_image" class="form-label">Ảnh bìa Album</label>
+                <input type="file" id="cover_image" accept=".jpg, .jpeg, .png" class="form-control" name="cover_image">
+            </div>
+
+            <!-- Thêm bài hát -->
+            <div class="mb-3">
+                <label class="form-label">Bài hát</label>
+                <div class="d-flex mb-3">
+                    <button type="button" class="btn btn-secondary me-2" onclick="showExistingSongs()">Thêm từ danh sách</button>
+                    <button type="button" class="btn btn-primary" onclick="showNewSongForm()">Thêm bài hát mới</button>
+                </div>
+
+                <!-- Danh sách bài hát được chọn (dưới dạng tags) -->
+                <div id="selected_songs_container" class="d-flex flex-wrap">
+                    <!-- Các tags bài hát sẽ được hiển thị ở đây -->
+                </div>
+            </div>
+
+            <!-- Modal: Chọn bài hát hiện có -->
+            <div class="modal fade" id="existingSongsModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Chọn bài hát hiện có</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <select id="existing_songs" class="form-select">
+                                <!-- Options được nạp từ cơ sở dữ liệu -->
+                                @foreach (var a in ViewBag.listSongs)
+                                {
+                                    <option value="@a[0]">@a[1]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="button" class="btn btn-primary" onclick="addExistingSongs()">Thêm</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal: Thêm bài hát mới -->
+            <div class="modal fade" id="newSongModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Thêm bài hát mới</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Tên bài hát</label>
+                                <input type="text" id="new_song_name" class="form-control" placeholder="Nhập tên bài hát" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Thể loại</label>
+                                <select id="new_song_genre" class="form-select" required>
+                                    <!-- Options được nạp từ cơ sở dữ liệu -->
+                                    @foreach (var a in ViewBag.listGenres)
+                                    {
+                                        <option value="@a[0]">@a[1]</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Lời bài hát</label>
+                                <textarea id="new_song_lyrics" class="form-control" rows="3" placeholder="Nhập lời bài hát"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Ngày phát hành</label>
+                                <input type="date" id="new_song_release_date" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Tệp bài hát</label>
+                                <input type="file" id="new_song_file" class="form-control" accept=".mp3" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Ảnh đại diện</label>
+                                <input type="file" id="new_song_thumbnail" class="form-control" accept=".jpg, .jpeg, .png">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="button" class="btn btn-success" onclick="addNewSong()">Lưu</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nút Gửi -->
+            <button type="submit" class="btn btn-success mt-3">Thêm Album</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#existing_songs').select2({
+            placeholder: "Tìm kiếm bài hát...",
+            allowClear: true
+        });
+    });
+    // Hiển thị modal chọn bài hát hiện có
+    function showExistingSongs() {
+        const modal = new bootstrap.Modal(document.getElementById('existingSongsModal'));
+        modal.show();
+    }
+
+    // Hiển thị modal thêm bài hát mới
+    function showNewSongForm() {
+        const modal = new bootstrap.Modal(document.getElementById('newSongModal'));
+        modal.show();
+    }
+
+    // Thêm bài hát hiện có vào danh sách (tags)
+    function addExistingSongs() {
+        const select = document.getElementById('existing_songs');
+        const container = document.getElementById('selected_songs_container');
+        Array.from(select.selectedOptions).forEach(option => {
+            const tag = createTag(option.value, option.textContent, true);
+            container.appendChild(tag);
+        });
+        bootstrap.Modal.getInstance(document.getElementById('existingSongsModal')).hide();
+    }
+
+    // Thêm bài hát mới vào danh sách (tags)
+    function addNewSong() {
+        const name = document.getElementById('new_song_name').value;
+        const genre = document.getElementById('new_song_genre').value;
+        const releaseDate = document.getElementById('new_song_release_date').value;
+        if (!name || !genre || !releaseDate) {
+            alert("Vui lòng nhập đầy đủ thông tin bài hát!");
+            return;
+        }
+        const container = document.getElementById('selected_songs_container');
+        const tag = createTag(null, name, false);
+        container.appendChild(tag);
+        bootstrap.Modal.getInstance(document.getElementById('newSongModal')).hide();
+    }
+
+    // Tạo một tag bài hát
+    function createTag(value, text, isExisting) {
+        const tag = document.createElement('div');
+        tag.className = 'badge bg-primary text-white me-2 mb-2';
+        tag.textContent = text;
+        if (isExisting) {
+            tag.innerHTML += `<input type="hidden" name="existing_songs[]" value="${value}">`;
+        } else {
+            tag.innerHTML += `<input type="hidden" name="new_songs[]" value="${text}">`;
+        }
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'btn-close btn-close-white ms-2';
+        closeBtn.onclick = () => tag.remove();
+        tag.appendChild(closeBtn);
+        return tag;
+    }
+</script>
